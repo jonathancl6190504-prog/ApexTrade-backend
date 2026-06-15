@@ -3,6 +3,10 @@ class WSServer {
  this.port = port;
   }
 
+  start() {
+ console.log(`WebSocket server starting on port ${this.port}`);
+  }
+
   broadcast(data) {
  // WebSocket broadcast logic
   }
