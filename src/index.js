@@ -78,7 +78,7 @@ app.get('/health', (req, res) => {
 
 // Start servers
 async function start() {
-  await wsServer.start();
+  aw
   app.listen(PORT, () => {
  console.log(`🚀 Backend running on http://localhost:${PORT}`);
  console.log(`📡 WebSocket on ws://localhost:${WS_PORT}`);
