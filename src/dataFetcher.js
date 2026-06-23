@@ -1,237 +1,118 @@
 const axios = require('axios');
 
 class DataFetcher {
-  constructor(polygonKey, finnhubKey) {
+  constructor({ polygonKey, finnhubKey }) {
  this.polygonKey = polygonKey;
  this.finnhubKey = finnhubKey;
- this.polygonBaseUrl = 'https://api.polygon.io/v2';
- this.finnhubBaseUrl = 'https://finnhub.io/api/v1';
-  }
 
-  /**
- * Fetch historical candle data from Polygon.io
- * @param {string} symbol - Trading symbol
- * @param {string} timeframe - Timeframe (minute, hour, day)
- * @param {number} limit - Number of candles
- * @returns {object[]} Array of candles {open, high, low, close, volume, timestamp}
- */
-  async getCandles(symbol, timeframe, limit = 100) {
- try {
- const params = {
- apiKey: this.polygonKey,
- limit: Math.min(limit, 50000),
+ // Futures symbol map: internal → Polygon ticker
+ this.symbolMap = {
+ ES: 'ES', // S&P 500 futures
+ NQ: 'NQ', // Nasdaq futures
+ CL: 'CL', // Crude Oil futures
+ GC: 'GC', // Gold futures
+ ZB: 'ZB', // 30-Year Treasury Bond futures
  };
 
- // Map timeframe to Polygon format
- let endpoint = '';
- if (timeframe === '5m') {
- endpoint = `/aggs/ticker/${symbol}/range/5/minute`;
- params.timespan = 'minute';
- } else if (timeframe === '15m') {
- endpoint = `/aggs/ticker/${symbol}/range/15/minute`;
- params.timespan = 'minute';
- } else if (timeframe === '30m') {
- endpoint = `/aggs/ticker/${symbol}/range/30/minute`;
- params.timespan = 'minute';
- } else if (timeframe === '1d') {
- endpoint = `/aggs/ticker/${symbol}/range/1/day`;
- params.timespan = 'day';
+ // Polygon timeframe map
+ this.tfMap = {
+ '5m':  { multiplier: 5,  timespan: 'minute' },
+ '15m': { multiplier: 15, timespan: 'minute' },
+ '30m': { multiplier: 30, timespan: 'minute' },
+ '1d':  { multiplier: 1,  timespan: 'day' },
+ };
+  }
+
+  async getCandles(symbol, timeframe = '5m', limit = 50) {
+ const ticker = this.symbolMap[symbol] || symbol;
+ const tf = this.tfMap[timeframe] || this.tfMap['5m'];
+
+ const to = new Date();
+ const from = new Date();
+ from.setDate(from.getDate() - (timeframe === '1d' ? 60 : 3));
+
+ const fromStr = from.toISOString().split('T')[0];
+ const toStr = to.toISOString().split('T')[0];
+
+ try {
+ const url = `https://api.polygon.io/v2/aggs/ticker/${ticker}/range/${tf.multiplier}/${tf.timespan}/${fromStr}/${toStr}`;
+ const res = await axios.get(url, {
+ params: { adjusted: true, sort: 'asc', limit, apiKey: this.polygonKey },
+ timeout: 8000,
+ });
+
+ if (!res.data.results || res.data.results.length === 0) {
+ throw new Error(`No candles returned for ${symbol}/${timeframe}`);
  }
 
- // Calculate date range (last N trading days)
- const endDate = new Date();
- const startDate = new Date(endDate);
- startDate.setDate(startDate.getDate() - Math.ceil(limit / 8)); // Rough estimate
-
- params.from = startDate.toISOString().split('T')[0];
- params.to = endDate.toISOString().split('T')[0];
- params.sort = 'asc';
-
- const response = await axios.get(
- `${this.polygonBaseUrl}${endpoint}`,
- { params }
- );
-
- if (!response.data.results) {
- return [];
- }
-
- // Transform Polygon response to standard format
- return response.data.results.slice(-limit).map((candle) => ({
- timestamp: candle.t,
- open: candle.o,
- high: candle.h,
- low: candle.l,
- close: candle.c,
- volume: candle.v,
+ const candles = res.data.results.map(r => ({
+ timestamp: r.t,
+ open: r.o,
+ high: r.h,
+ low: r.l,
+ close: r.c,
+ volume: r.v,
  }));
- } catch (error) {
- console.error(`Error fetching candles for ${symbol}:`, error.message);
- return [];
+
+ return { candles };
+ } catch (err) {
+ console.error(`[DataFetcher] getCandles error (${symbol}/${timeframe}):`, err.message);
+ throw err;
  }
   }
 
-  /**
- * Fetch current price for a symbol
- * @param {string} symbol - Trading symbol
- * @returns {number|null} Current price or null if error
- */
-  async getCurrentPrice(symbol) {
+  async getQuote(symbol) {
+ const ticker = this.symbolMap[symbol] || symbol;
+
  try {
- const params = { apiKey: this.polygonKey };
+ const url = `https://api.polygon.io/v2/last/trade/${ticker}`;
+ const res = await axios.get(url, {
+ params: { apiKey: this.polygonKey },
+ timeout: 5000,
+ });
 
- const response = await axios.get(
- `${this.polygonBaseUrl}/aggs/ticker/${symbol}/prev`,
- { params }
- );
+ const price = res.data.results?.p || res.data.last?.price;
+ if (!price) throw new Error('No price in response');
 
- if (response.data.results && response.data.results.length > 0) {
- return response.data.results[0].c; // Close price
+ return { price, bid: price * 0.9999, ask: price * 1.0001 };
+ } catch (err) {
+ // Fallback: use Finnhub quote
+ try {
+ const res = await axios.get('https://finnhub.io/api/v1/quote', {
+ params: { symbol: ticker, token: this.finnhubKey },
+ timeout: 5000,
+ });
+ const price = res.data.c;
+ return { price, bid: res.data.l, ask: res.data.h };
+ } catch (fb) {
+ console.error(`[DataFetcher] getQuote fallback failed (${symbol}):`, fb.message);
+ throw fb;
  }
- return null;
- } catch (error) {
- console.error(`Error fetching current price for ${symbol}:`, error.message);
- return null;
  }
   }
 
-  /**
- * Fetch market sentiment from Finnhub
- * @param {string} symbol - Trading symbol
- * @returns {number} Sentiment score (-1 to 1)
- */
-  async getMarketSentiment(symbol) {
+  async getSentiment(symbol) {
+ const ticker = this.symbolMap[symbol] || symbol;
+
  try {
- const params = {
- symbol,
- token: this.finnhubKey,
- };
+ const res = await axios.get('https://finnhub.io/api/v1/news-sentiment', {
+ params: { symbol: ticker, token: this.finnhubKey },
+ timeout: 5000,
+ });
 
- const response = await axios.get(
- `${this.finnhubBaseUrl}/sentiment/bullbear`,
- { params }
- );
-
- if (response.data) {
- // Calculate sentiment: positive count - negative count
- const bullish = response.data.bull || 0;
- const bearish = response.data.bear || 0;
- const total = bullish + bearish || 1;
-
- // Normalize to -1 to 1 range
- const sentiment = (bullish - bearish) / total;
- return parseFloat(sentiment.toFixed(2));
- }
-
- return 0; // Neutral sentiment if no data
- } catch (error) {
- console.error(
- `Error fetching sentiment for ${symbol}:`,
- error.message
- );
- return 0; // Return neutral sentiment on error
- }
-  }
-
-  /**
- * Fetch multiple timeframes for a symbol
- * @param {string} symbol - Trading symbol
- * @returns {object} Candles by timeframe
- */
-  async getMultiTimeframeData(symbol) {
- try {
- const [candles5m, candles15m, candles30m, candles1d] = await Promise.all([
- this.getCandles(symbol, '5m', 30),
- this.getCandles(symbol, '15m', 30),
- this.getCandles(symbol, '30m', 30),
- this.getCandles(symbol, '1d', 30),
- ]);
+ const score = res.data.sentiment?.bullishPercent - res.data.sentiment?.bearishPercent || 0;
+ const bullishArticles = res.data.buzz?.articlesInLastWeek || 0;
 
  return {
- '5m': candles5m,
- '15m': candles15m,
- '30m': candles30m,
- '1d': candles1d,
+ sentimentScore: score,
+ bullishArticles,
+ bearishArticles: 0,
+ news: res.data.news || [],
  };
- } catch (error) {
- console.error(`Error fetching multi-timeframe data for ${symbol}:`, error.message);
- return {};
- }
-  }
-
-  /**
- * Get market data and sentiment for a symbol
- * @param {string} symbol - Trading symbol
- * @returns {object} Complete market data
- */
-  async getMarketData(symbol) {
- try {
- const [timeframeData, sentiment, currentPrice] = await Promise.all([
- this.getMultiTimeframeData(symbol),
- this.getMarketSentiment(symbol),
- this.getCurrentPrice(symbol),
- ]);
-
- return {
- symbol,
- currentPrice,
- sentiment,
- timeframes: timeframeData,
- timestamp: new Date().toISOString(),
- };
- } catch (error) {
- console.error(`Error getting market data for ${symbol}:`, error.message);
- return null;
- }
-  }
-
-  /**
- * Batch fetch market data for multiple symbols
- * @param {string[]} symbols - Array of trading symbols
- * @returns {object[]} Array of market data
- */
-  async getMarketDataBatch(symbols) {
- try {
- const results = await Promise.all(
- symbols.map((symbol) => this.getMarketData(symbol))
- );
- return results.filter((r) => r !== null);
- } catch (error) {
- console.error('Error in batch market data fetch:', error.message);
- return [];
- }
-  }
-
-  /**
- * Validate API connections
- * @returns {object} Connection status
- */
-  async validateConnections() {
- try {
- const polygonTest = await axios.get(
- `${this.polygonBaseUrl}/aggs/ticker/ES/prev`,
- { params: { apiKey: this.polygonKey } }
- );
- const polygonOk = polygonTest.status === 200;
-
- const finnhubTest = await axios.get(
- `${this.finnhubBaseUrl}/sentiment/bullbear`,
- { params: { symbol: 'AAPL', token: this.finnhubKey } }
- );
- const finnhubOk = finnhubTest.status === 200;
-
- return {
- polygon: polygonOk,
- finnhub: finnhubOk,
- timestamp: new Date().toISOString(),
- };
- } catch (error) {
- console.error('Error validating API connections:', error.message);
- return {
- polygon: false,
- finnhub: false,
- error: error.message,
- };
+ } catch (err) {
+ console.warn(`[DataFetcher] getSentiment failed (${symbol}), defaulting to 0`);
+ // Neutral fallback so bot doesn't crash
+ return { sentimentScore: 0, bullishArticles: 0, bearishArticles: 0, news: [] };
  }
   }
 }
