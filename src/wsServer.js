@@ -1,14 +1,26 @@
+const WebSocket = require('ws');
+
 class WSServer {
-  constructor(port) {
- this.port = port;
+  constructor() {
+ this.wss = null;
+ this.clients = new Set();
   }
 
-  start() {
- console.log(`WebSocket server starting on port ${this.port}`);
+  attach(httpServer) {
+ this.wss = new WebSocket.Server({ server: httpServer });
+ this.wss.on('connection', (ws) => {
+ this.clients.add(ws);
+ ws.send(JSON.stringify({ type: 'CONNECTED' }));
+ ws.on('close', () => this.clients.delete(ws));
+ });
+ console.log('WebSocket server attached to HTTP server');
   }
 
   broadcast(data) {
- // WebSocket broadcast logic
+ const msg = JSON.stringify(data);
+ this.clients.forEach(ws => {
+ if (ws.readyState === WebSocket.OPEN) ws.send(msg);
+ });
   }
 }
 
