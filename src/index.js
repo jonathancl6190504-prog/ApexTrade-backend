@@ -6,11 +6,10 @@ const WSServer = require('./wsServer');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const WS_PORT = process.env.WS_PORT || 8080;
 
 app.use(express.json());
 
-const wsServer = new WSServer(WS_PORT);
+const wsServer = new WSServer();
 const bot = new TradingBot({
   polygonKey: process.env.POLYGON_API_KEY,
   finnhubKey: process.env.FINNHUB_API_KEY,
@@ -18,7 +17,6 @@ const bot = new TradingBot({
   watchList: (process.env.WATCH_LIST || 'ES,NQ,CL').split(','),
 });
 
-// Bot control
 app.post('/api/bot/start', async (req, res) => {
   if (bot.isRunning) return res.status(400).json({ error: 'Bot already running' });
   await bot.startAutomatedTrading(wsServer);
@@ -32,36 +30,24 @@ app.post('/api/bot/stop', (req, res) => {
   res.json({ success: true });
 });
 
-// Account
-app.get('/api/account', (req, res) => {
-  res.json(bot.getAccountSummary());
-});
-
-app.get('/api/positions', (req, res) => {
-  res.json({ openPositions: bot.engine.positions });
-});
-
+app.get('/api/account', (req, res) => res.json(bot.getAccountSummary()));
+app.get('/api/positions', (req, res) => res.json({ openPositions: bot.engine.positions }));
 app.get('/api/history', (req, res) => {
   const limit = parseInt(req.query.limit) || 50;
   res.json({ trades: bot.getTradingHistory(limit) });
 });
 
-// Manual trading
 app.post('/api/trade/buy', (req, res) => {
   const { symbol, price, quantity = 1 } = req.body;
   const result = bot.executeManualTrade('BUY', symbol, price, quantity);
-  if (result.success) {
- wsServer.broadcast({ type: 'TRADE_EXECUTED', action: 'BUY', symbol, price });
-  }
+  if (result.success) wsServer.broadcast({ type: 'TRADE_EXECUTED', action: 'BUY', symbol, price });
   res.json(result);
 });
 
 app.post('/api/trade/sell', (req, res) => {
   const { positionId, exitPrice } = req.body;
   const result = bot.closePosition(positionId, exitPrice);
-  if (result.success) {
- wsServer.broadcast({ type: 'POSITION_CLOSED', positionId, exitPrice });
-  }
+  if (result.success) wsServer.broadcast({ type: 'POSITION_CLOSED', positionId, exitPrice });
   res.json(result);
 });
 
@@ -71,16 +57,14 @@ app.post('/api/trade/close-all', (req, res) => {
   res.json({ success: true });
 });
 
-// Health check
-app.get('/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
-});
+app.get('/health', (req, res) => res.json({ status: 'ok', timestamp: new Date().toISOString() }));
 
-// Start servers
 async function start() {
-  app.listen(PORT, () => {
- console.log(`🚀 Backend running on http://localhost:${PORT}`);
- console.log(`📡 WebSocket on ws://localhost:${WS_PORT}`);
+  const httpServer = http.createServer(app);
+  wsServer.attach(httpServer);
+  httpServer.listen(PORT, () => {
+ console.log(`🚀 Backend running on port ${PORT}`);
+ console.log(`📡 WebSocket attached to same server`);
   });
 }
 
