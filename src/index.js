@@ -61,11 +61,12 @@ app.get('/health', (req, res) => res.json({ status: 'ok', timestamp: new Date().
 
 async function start() {
   const httpServer = http.createServer(app);
-  wsServer.attach(httpServer);
+  await wsServer.start();
   httpServer.listen(PORT, () => {
  console.log(`🚀 Backend running on port ${PORT}`);
- console.log(`📡 WebSocket attached to same server`);
+ console.log(`🔌 WebSocket server started on port ${WS_PORT}`);
   });
+}
 }
 
 start().catch(console.error);
