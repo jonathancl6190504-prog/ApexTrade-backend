@@ -8,8 +8,8 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
-
-const wsServer = new WSServer();
+const WS_PORT = process.env.WS_PORT || 8080;
+const wsServer = new WSServer(WS_PORT);
 const bot = new TradingBot({
   polygonKey: process.env.POLYGON_API_KEY,
   finnhubKey: process.env.FINNHUB_API_KEY,
