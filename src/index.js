@@ -67,6 +67,5 @@ async function start() {
  console.log(`🔌 WebSocket server started on port ${WS_PORT}`);
   });
 }
-}
 
 start().catch(console.error);
