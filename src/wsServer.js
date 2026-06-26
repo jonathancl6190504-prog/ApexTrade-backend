@@ -1,21 +1,18 @@
-// src/wsServer.js
 const { WebSocketServer } = require('ws');
 
 class WSServer {
-  constructor(port) {
- this.port = port;
+  constructor() {
  this.wss = null;
  this.clients = new Set();
   }
 
-  async start() {
- this.wss = new WebSocketServer({ port: this.port });
+  async start(server) {
+ this.wss = new WebSocketServer({ server });
 
  this.wss.on('connection', (ws) => {
  this.clients.add(ws);
  console.log(`📱 Client connected (${this.clients.size} total)`);
 
- // Send welcome
  ws.send(JSON.stringify({
  type: 'CONNECTED',
  message: 'ApexTrade WebSocket ready',
@@ -32,19 +29,12 @@ class WSServer {
  this.clients.delete(ws);
  });
  });
-
- return new Promise((resolve) => {
- this.wss.on('listening', () => {
- console.log(`📡 WebSocket server listening on port ${this.port}`);
- resolve();
- });
- });
   }
 
   broadcast(data) {
  const msg = JSON.stringify(data);
  for (const client of this.clients) {
- if (client.readyState === 1) { // OPEN
+ if (client.readyState === 1) {
  client.send(msg);
  }
  }
