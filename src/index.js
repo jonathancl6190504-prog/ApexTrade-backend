@@ -8,8 +8,8 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
-const WS_PORT = process.env.WS_PORT || 8080;
-const wsServer = new WSServer(WS_PORT);
+
+const wsServer = new WSServer();
 const bot = new TradingBot({
   polygonKey: process.env.POLYGON_API_KEY,
   finnhubKey: process.env.FINNHUB_API_KEY,
@@ -61,10 +61,10 @@ app.get('/health', (req, res) => res.json({ status: 'ok', timestamp: new Date().
 
 async function start() {
   const httpServer = http.createServer(app);
-  await wsServer.start();
+  await wsServer.start(httpServer);
   httpServer.listen(PORT, () => {
  console.log(`🚀 Backend running on port ${PORT}`);
- console.log(`🔌 WebSocket server started on port ${WS_PORT}`);
+ console.log(`🔌 WebSocket attached on port ${PORT}`);
   });
 }
 
