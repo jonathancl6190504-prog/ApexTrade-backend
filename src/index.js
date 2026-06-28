@@ -30,8 +30,23 @@ app.post('/api/bot/stop', (req, res) => {
   res.json({ success: true });
 });
 
-app.get('/api/account', (req, res) => res.json(bot.getAccountSummary()));
-app.get('/api/positions', (req, res) => res.json({ openPositions: bot.engine.positions }));
+app.get('/api/account', (req, res) => {
+  try {
+ res.json(bot.getAccountSummary());
+  } catch (err) {
+ res.status(500).json({ error: err.message });
+  }
+});
+
+app.get('/api/positions', (req, res) => {
+  try {
+ const summary = bot.paperEngine.getAccountSummary();
+ res.json({ openPositions: summary.openPositions || [] });
+  } catch (err) {
+ res.status(500).json({ error: err.message });
+  }
+});
+
 app.get('/api/history', (req, res) => {
   const limit = parseInt(req.query.limit) || 50;
   res.json({ trades: bot.getTradingHistory(limit) });
@@ -52,9 +67,13 @@ app.post('/api/trade/sell', (req, res) => {
 });
 
 app.post('/api/trade/close-all', (req, res) => {
-  bot.engine.closeAllPositions();
-  wsServer.broadcast({ type: 'ALL_POSITIONS_CLOSED' });
-  res.json({ success: true });
+  try {
+ bot.closeAllPositions();
+ wsServer.broadcast({ type: 'ALL_POSITIONS_CLOSED' });
+ res.json({ success: true });
+  } catch (err) {
+ res.status(500).json({ error: err.message });
+  }
 });
 
 app.get('/health', (req, res) => res.json({ status: 'ok', timestamp: new Date().toISOString() }));
