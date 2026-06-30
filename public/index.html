@@ -2,511 +2,261 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>ApexTrade</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ApexTrade Dashboard</title>
   <style>
- * { margin: 0; padding: 0; box-sizing: border-box; }
- body {
- background: #0a0e1a;
- color: #e0e6f0;
- font-family: 'Segoe UI', sans-serif;
- min-height: 100vh;
- }
- header {
- background: #0d1224;
- border-bottom: 1px solid #1e2a45;
- padding: 12px 24px;
- display: flex;
- align-items: center;
- justify-content: space-between;
- }
- .logo {
- font-size: 22px;
- font-weight: 700;
- color: #00d4ff;
- letter-spacing: 1px;
- }
- .logo span { color: #ff6b35; }
- .status-bar {
- display: flex;
- gap: 16px;
- align-items: center;
- font-size: 13px;
- }
- .dot {
- width: 8px; height: 8px;
- border-radius: 50%;
- background: #ff4444;
- display: inline-block;
- margin-right: 6px;
- }
- .dot.green { background: #00ff88; }
- .main {
- padding: 20px 24px;
- display: grid;
- grid-template-columns: 1fr 1fr 1fr 1fr;
- gap: 16px;
- }
- .card {
- background: #0d1224;
- border: 1px solid #1e2a45;
- border-radius: 10px;
- padding: 18px;
- }
- .card-label {
- font-size: 11px;
- color: #6b7fa3;
- text-transform: uppercase;
- letter-spacing: 1px;
- margin-bottom: 8px;
- }
- .card-value {
- font-size: 26px;
- font-weight: 700;
- color: #e0e6f0;
- }
- .card-value.green { color: #00ff88; }
- .card-value.red { color: #ff4466; }
- .card-sub {
- font-size: 12px;
- color: #6b7fa3;
- margin-top: 4px;
- }
- .section {
- grid-column: 1 / -1;
- }
- .two-col {
- grid-column: 1 / -1;
- display: grid;
- grid-template-columns: 1fr 1fr;
- gap: 16px;
- }
- .section-header {
- font-size: 13px;
- font-weight: 600;
- color: #00d4ff;
- text-transform: uppercase;
- letter-spacing: 1px;
- margin-bottom: 14px;
- padding-bottom: 8px;
- border-bottom: 1px solid #1e2a45;
- }
- table {
- width: 100%;
- border-collapse: collapse;
- font-size: 13px;
- }
- th {
- text-align: left;
- padding: 8px 10px;
- color: #6b7fa3;
- font-weight: 500;
- font-size: 11px;
- text-transform: uppercase;
- letter-spacing: 0.5px;
- border-bottom: 1px solid #1e2a45;
- }
- td {
- padding: 10px 10px;
- border-bottom: 1px solid #131929;
- color: #c8d4e8;
- }
- tr:last-child td { border-bottom: none; }
- tr:hover td { background: #131929; }
- .badge {
- display: inline-block;
- padding: 2px 8px;
- border-radius: 4px;
- font-size: 11px;
- font-weight: 600;
- }
- .badge.buy { background: rgba(0,255,136,0.15); color: #00ff88; }
- .badge.sell { background: rgba(255,68,102,0.15); color: #ff4466; }
- .empty-state {
- text-align: center;
- padding: 30px;
- color: #3a4a6b;
- font-size: 13px;
- }
- .controls { grid-column: 1 / -1; }
- .controls-grid {
- display: grid;
- grid-template-columns: 1fr 1fr;
- gap: 20px;
- }
- .form-group {
- margin-bottom: 14px;
- }
- .form-group label {
- display: block;
- font-size: 11px;
- color: #6b7fa3;
- text-transform: uppercase;
- letter-spacing: 0.5px;
- margin-bottom: 6px;
- }
- .form-group input, .form-group select {
- width: 100%;
- background: #131929;
- border: 1px solid #1e2a45;
- border-radius: 6px;
- padding: 10px 12px;
- color: #e0e6f0;
- font-size: 14px;
- outline: none;
- }
- .form-group input:focus, .form-group select:focus {
- border-color: #00d4ff;
- }
- .btn {
- padding: 10px 20px;
- border-radius: 6px;
- font-size: 13px;
- font-weight: 600;
- border: none;
- cursor: pointer;
- transition: opacity 0.15s;
- letter-spacing: 0.5px;
- }
- .btn:hover { opacity: 0.85; }
- .btn:active { opacity: 0.7; }
- .btn-buy { background: #00c976; color: #000; }
- .btn-sell { background: #ff4466; color: #fff; }
- .btn-start { background: #00d4ff; color: #000; width: 100%; margin-bottom: 10px; }
- .btn-stop { background: #ff6b35; color: #fff; width: 100%; }
- .btn-close { background: transparent; border: 1px solid #ff4466; color: #ff4466; font-size: 11px; padding: 4px 10px; }
- .bot-status {
- text-align: center;
- padding: 14px;
- border-radius: 8px;
- font-size: 13px;
- font-weight: 600;
- margin-bottom: 14px;
- }
- .bot-status.stopped { background: rgba(255,68,68,0.1); color: #ff4444; border: 1px solid rgba(255,68,68,0.2); }
- .bot-status.running { background: rgba(0,255,136,0.1); color: #00ff88; border: 1px solid rgba(0,255,136,0.2); }
- .toast {
- position: fixed;
- bottom: 24px; right: 24px;
- background: #1e2a45;
- border: 1px solid #00d4ff;
- border-radius: 8px;
- padding: 14px 20px;
- font-size: 13px;
- color: #e0e6f0;
- display: none;
- z-index: 999;
- }
- .toast.show { display: block; }
- .pnl-pos { color: #00ff88; }
- .pnl-neg { color: #ff4466; }
- @media (max-width: 768px) {
- .main { grid-template-columns: 1fr 1fr; }
- .two-col, .controls-grid { grid-template-columns: 1fr; }
- }
+ * { box-sizing: border-box; margin: 0; padding: 0; }
+ body { background: #0d1117; color: #e6edf3; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; min-height: 100vh; }
+ header { background: #161b22; border-bottom: 1px solid #30363d; padding: 16px 24px; display: flex; align-items: center; justify-content: space-between; }
+ header h1 { font-size: 20px; font-weight: 700; color: #58a6ff; }
+ .status-dot { width: 10px; height: 10px; border-radius: 50%; background: #3fb950; display: inline-block; margin-right: 6px; }
+ .status-dot.off { background: #f85149; }
+ main { max-width: 900px; margin: 0 auto; padding: 24px 16px; }
+ .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 28px; }
+ .card { background: #161b22; border: 1px solid #30363d; border-radius: 10px; padding: 20px; }
+ .card label { font-size: 12px; color: #8b949e; text-transform: uppercase; letter-spacing: .05em; }
+ .card .value { font-size: 26px; font-weight: 700; margin-top: 6px; }
+ .green { color: #3fb950; }
+ .red { color: #f85149; }
+ .section { background: #161b22; border: 1px solid #30363d; border-radius: 10px; padding: 20px; margin-bottom: 24px; }
+ .section h2 { font-size: 15px; font-weight: 600; margin-bottom: 16px; color: #8b949e; text-transform: uppercase; letter-spacing: .05em; }
+ .trade-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end; }
+ .trade-row input { background: #0d1117; border: 1px solid #30363d; color: #e6edf3; border-radius: 6px; padding: 10px 12px; font-size: 14px; flex: 1; min-width: 120px; outline: none; }
+ .trade-row input:focus { border-color: #58a6ff; }
+ .btn { padding: 10px 20px; border: none; border-radius: 6px; font-size: 14px; font-weight: 600; cursor: pointer; transition: opacity .15s; }
+ .btn:hover { opacity: .85; }
+ .btn-buy { background: #3fb950; color: #000; }
+ .btn-sell { background: #f85149; color: #fff; }
+ .btn-danger { background: #b91c1c; color: #fff; }
+ .btn-start { background: #58a6ff; color: #000; }
+ .btn-stop { background: #8b949e; color: #000; }
+ .btn-sub { background: #a371f7; color: #fff; width: 100%; padding: 14px; font-size: 16px; margin-top: 8px; border-radius: 8px; }
+ table { width: 100%; border-collapse: collapse; font-size: 13px; }
+ th { text-align: left; color: #8b949e; padding: 8px 10px; border-bottom: 1px solid #30363d; font-weight: 500; }
+ td { padding: 10px; border-bottom: 1px solid #21262d; }
+ .empty { color: #8b949e; font-size: 13px; padding: 12px 0; }
+ #toast { position: fixed; bottom: 24px; right: 24px; background: #161b22; border: 1px solid #30363d; color: #e6edf3; padding: 12px 20px; border-radius: 8px; font-size: 14px; display: none; z-index: 999; max-width: 300px; }
+ .bot-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+ .bot-status { font-size: 13px; color: #8b949e; }
   </style>
 </head>
 <body>
 
 <header>
-  <div class="logo">Apex<span>Trade</span></div>
-  <div class="status-bar">
- <span><span class="dot" id="wsDot"></span><span id="wsStatus">Connecting...</span></span>
- <span id="clockDisplay" style="color:#6b7fa3"></span>
-  </div>
+  <h1>⚡ ApexTrade</h1>
+  <div><span class="status-dot" id="botDot"></span><span id="botStatusText" style="font-size:13px;">Loading…</span></div>
 </header>
 
-<div class="main">
+<main>
 
-  <!-- Stats Cards -->
-  <div class="card">
- <div class="card-label">Account Balance</div>
- <div class="card-value" id="balance">--</div>
- <div class="card-sub">Paper Trading</div>
+  <!-- Account Summary -->
+  <div class="cards">
+ <div class="card">
+ <label>Balance</label>
+ <div class="value" id="balance"> - </div>
+ </div>
+ <div class="card">
+ <label>Unrealized P&L</label>
+ <div class="value" id="unrealizedPnl"> - </div>
+ </div>
+ <div class="card">
+ <label>Total Value</label>
+ <div class="value" id="totalValue"> - </div>
+ </div>
+ <div class="card">
+ <label>Open Positions</label>
+ <div class="value" id="openPositions"> - </div>
+ </div>
   </div>
-  <div class="card">
- <div class="card-label">Total P&L</div>
- <div class="card-value" id="totalPnl">--</div>
- <div class="card-sub" id="unrealizedPnl">Unrealized: --</div>
+
+  <!-- Bot Control -->
+  <div class="section">
+ <h2>Bot Control</h2>
+ <div class="bot-row">
+ <button class="btn btn-start" onclick="startBot()">▶ Start Bot</button>
+ <button class="btn btn-stop" onclick="stopBot()">■ Stop Bot</button>
+ <span class="bot-status" id="botControlStatus"></span>
+ </div>
   </div>
-  <div class="card">
- <div class="card-label">Win Rate</div>
- <div class="card-value" id="winRate">--</div>
- <div class="card-sub" id="totalTrades">Total Trades: --</div>
-  </div>
-  <div class="card">
- <div class="card-label">Open Positions</div>
- <div class="card-value" id="positionCount">--</div>
- <div class="card-sub">Active Now</div>
+
+  <!-- Trade -->
+  <div class="section">
+ <h2>Place Trade</h2>
+ <div class="trade-row">
+ <input id="symbol" placeholder="Symbol e.g. ES" />
+ <input id="quantity" type="number" placeholder="Quantity" />
+ <input id="price" type="number" placeholder="Price" />
+ <button class="btn btn-buy" onclick="placeTrade('buy')">Buy</button>
+ <button class="btn btn-sell" onclick="placeTrade('sell')">Sell</button>
+ </div>
   </div>
 
   <!-- Open Positions -->
-  <div class="section card">
- <div class="section-header">Open Positions</div>
- <div id="positionsTable">
- <div class="empty-state">No open positions</div>
+  <div class="section">
+ <h2>Open Positions</h2>
+ <div id="positionsWrap">
+ <p class="empty">Loading…</p>
+ </div>
+ <button class="btn btn-danger" style="margin-top:14px" onclick="closeAll()">Close All Positions</button>
+  </div>
+
+  <!-- Trade History -->
+  <div class="section">
+ <h2>Trade History</h2>
+ <div id="historyWrap">
+ <p class="empty">Loading…</p>
  </div>
   </div>
 
-  <!-- Two column: Trade History + Bot Controls -->
-  <div class="two-col">
-
- <!-- Trade History -->
- <div class="card">
- <div class="section-header">Trade History</div>
- <div id="historyTable">
- <div class="empty-state">No trades yet</div>
- </div>
- </div>
-
- <!-- Right column: Bot + Manual Trade -->
- <div style="display:flex; flex-direction:column; gap:16px;">
-
- <!-- Bot Controls -->
- <div class="card">
- <div class="section-header">Bot Controls</div>
- <div class="bot-status stopped" id="botStatus">● Bot Stopped</div>
- <button class="btn btn-start" onclick="startBot()">▶ Start Automated Trading</button>
- <button class="btn btn-stop" onclick="stopBot()">■ Stop Bot</button>
- </div>
-
- <!-- Manual Trade -->
- <div class="card">
- <div class="section-header">Manual Trade</div>
- <div class="form-group">
- <label>Symbol</label>
- <select id="tradeSymbol">
- <option>ES</option>
- <option>NQ</option>
- <option>CL</option>
- <option>GC</option>
- <option>RTY</option>
- </select>
- </div>
- <div class="form-group">
- <label>Price</label>
- <input type="number" id="tradePrice" placeholder="e.g. 5200.25" step="0.25"/>
- </div>
- <div class="form-group">
- <label>Quantity</label>
- <input type="number" id="tradeQty" value="1" min="1"/>
- </div>
- <div style="display:flex; gap:10px;">
- <button class="btn btn-buy" style="flex:1" onclick="placeTrade('BUY')">▲ BUY</button>
- <button class="btn btn-sell" style="flex:1" onclick="placeTrade('SELL')">▼ SELL</button>
- </div>
- </div>
-
- </div>
+  <!-- Subscribe -->
+  <div class="section">
+ <h2>Subscription</h2>
+ <p style="font-size:13px;color:#8b949e;margin-bottom:8px;">Unlock full access for $29/month.</p>
+ <button class="btn btn-sub" onclick="subscribe()">Subscribe with Stripe →</button>
   </div>
 
-</div>
+</main>
 
-<div class="toast" id="toast"></div>
+<div id="toast"></div>
 
 <script>
-  const API = 'https://apextrade-backend-production.up.railway.app';
+  const API = '';  // same origin
+
+  function toast(msg, err) {
+ const el = document.getElementById('toast');
+ el.textContent = msg;
+ el.style.borderColor = err ? '#f85149' : '#3fb950';
+ el.style.display = 'block';
+ setTimeout(() => el.style.display = 'none', 3500);
+  }
 
   function fmt(n) {
- return '$' + parseFloat(n || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+ return '$' + Number(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   }
 
-  function pnlClass(n) {
- return parseFloat(n) >= 0 ? 'pnl-pos' : 'pnl-neg';
-  }
-
-  function showToast(msg, color) {
- const t = document.getElementById('toast');
- t.textContent = msg;
- t.style.borderColor = color || '#00d4ff';
- t.classList.add('show');
- setTimeout(() => t.classList.remove('show'), 3500);
-  }
-
-  // Clock
-  setInterval(() => {
- document.getElementById('clockDisplay').textContent = new Date().toLocaleTimeString('en-US', { hour12: false });
-  }, 1000);
-
-  // Load account data
   async function loadAccount() {
  try {
  const r = await fetch(API + '/api/account');
  const d = await r.json();
  document.getElementById('balance').textContent = fmt(d.balance);
-
- const pnlEl = document.getElementById('totalPnl');
- pnlEl.textContent = fmt(d.totalPnL);
- pnlEl.className = 'card-value ' + (d.totalPnL >= 0 ? 'green' : 'red');
-
- document.getElementById('unrealizedPnl').textContent = 'Unrealized: ' + fmt(d.totalUnrealizedPnL);
- document.getElementById('winRate').textContent = (d.winRate || 0).toFixed(1) + '%';
- document.getElementById('totalTrades').textContent = 'Total Trades: ' + (d.totalTrades || 0);
- } catch(e) {}
+ const pnl = d.unrealizedPnl || 0;
+ const pnlEl = document.getElementById('unrealizedPnl');
+ pnlEl.textContent = fmt(pnl);
+ pnlEl.className = 'value ' + (pnl >= 0 ? 'green' : 'red');
+ document.getElementById('totalValue').textContent = fmt(d.totalValue);
+ document.getElementById('openPositions').textContent = d.openPositions;
+ } catch(e) { console.error('account', e); }
   }
 
-  // Load positions
   async function loadPositions() {
  try {
  const r = await fetch(API + '/api/positions');
  const d = await r.json();
- const pos = d.openPositions || [];
- document.getElementById('positionCount').textContent = pos.length;
-
- const el = document.getElementById('positionsTable');
- if (!pos.length) {
- el.innerHTML = '<div class="empty-state">No open positions</div>';
- return;
- }
- el.innerHTML = `
- <table>
- <thead><tr>
- <th>Symbol</th><th>Side</th><th>Qty</th>
- <th>Entry</th><th>Current</th><th>P&L</th><th>Action</th>
- </tr></thead>
- <tbody>${pos.map(p => `
- <tr>
- <td><strong>${p.symbol || '--'}</strong></td>
- <td><span class="badge ${p.side === 'LONG' ? 'buy' : 'sell'}">${p.side || '--'}</span></td>
- <td>${p.quantity || 1}</td>
- <td>${fmt(p.entryPrice)}</td>
- <td>${fmt(p.currentPrice || p.entryPrice)}</td>
- <td class="${pnlClass(p.unrealizedPnL)}">${fmt(p.unrealizedPnL)}</td>
- <td><button class="btn btn-close" onclick="closePos('${p.id}', ${p.currentPrice || p.entryPrice})">Close</button></td>
+ const wrap = document.getElementById('positionsWrap');
+ if (!d.length) { wrap.innerHTML = '<p class="empty">No open positions.</p>'; return; }
+ wrap.innerHTML = `<table>
+ <tr><th>Symbol</th><th>Side</th><th>Qty</th><th>Entry</th><th>Current</th><th>P&L</th></tr>
+ ${d.map(p => `<tr>
+ <td>${p.symbol}</td><td>${p.side}</td><td>${p.quantity}</td>
+ <td>${fmt(p.entryPrice)}</td><td>${fmt(p.currentPrice)}</td>
+ <td class="${(p.unrealizedPnl||0)>=0?'green':'red'}">${fmt(p.unrealizedPnl||0)}</td>
  </tr>`).join('')}
- </tbody>
  </table>`;
- } catch(e) {}
+ } catch(e) { console.error('positions', e); }
   }
 
-  // Load history
   async function loadHistory() {
  try {
- const r = await fetch(API + '/api/history?limit=20');
+ const r = await fetch(API + '/api/history');
  const d = await r.json();
- const trades = d.trades || [];
-
- const el = document.getElementById('historyTable');
- if (!trades.length) {
- el.innerHTML = '<div class="empty-state">No trades yet</div>';
- return;
- }
- el.innerHTML = `
- <table>
- <thead><tr>
- <th>Symbol</th><th>Action</th><th>Price</th><th>P&L</th><th>Time</th>
- </tr></thead>
- <tbody>${trades.slice(0,15).map(t => `
- <tr>
- <td><strong>${t.symbol || '--'}</strong></td>
- <td><span class="badge ${t.action === 'BUY' ? 'buy' : 'sell'}">${t.action || '--'}</span></td>
- <td>${fmt(t.price)}</td>
- <td class="${pnlClass(t.pnl)}">${t.pnl != null ? fmt(t.pnl) : '--'}</td>
- <td style="color:#6b7fa3">${t.timestamp ? new Date(t.timestamp).toLocaleTimeString() : '--'}</td>
+ const wrap = document.getElementById('historyWrap');
+ if (!d.length) { wrap.innerHTML = '<p class="empty">No trades yet.</p>'; return; }
+ wrap.innerHTML = `<table>
+ <tr><th>Symbol</th><th>Qty</th><th>Entry</th><th>Exit</th><th>P&L</th><th>Closed</th></tr>
+ ${d.slice().reverse().map(h => `<tr>
+ <td>${h.symbol}</td><td>${h.quantity}</td>
+ <td>${fmt(h.entryPrice)}</td><td>${fmt(h.exitPrice)}</td>
+ <td class="${(h.realizedPnl||0)>=0?'green':'red'}">${fmt(h.realizedPnl||0)}</td>
+ <td>${new Date(h.closedAt).toLocaleDateString()}</td>
  </tr>`).join('')}
- </tbody>
  </table>`;
- } catch(e) {}
+ } catch(e) { console.error('history', e); }
+  }
+
+  async function loadBotStatus() {
+ try {
+ const r = await fetch(API + '/health');
+ const d = await r.json();
+ const running = d.botRunning;
+ document.getElementById('botDot').className = 'status-dot ' + (running ? '' : 'off');
+ document.getElementById('botStatusText').textContent = running ? 'Bot Running' : 'Bot Stopped';
+ } catch(e) {
+ document.getElementById('botStatusText').textContent = 'Offline';
+ document.getElementById('botDot').className = 'status-dot off';
+ }
   }
 
   async function startBot() {
  try {
  const r = await fetch(API + '/api/bot/start', { method: 'POST' });
  const d = await r.json();
- if (d.success || d.error === 'Bot already running') {
- document.getElementById('botStatus').textContent = '● Bot Running';
- document.getElementById('botStatus').className = 'bot-status running';
- showToast('✅ Bot started', '#00ff88');
- } else {
- showToast('⚠️ ' + (d.error || 'Could not start'), '#ff6b35');
- }
- } catch(e) { showToast('Connection error', '#ff4466'); }
+ toast('Bot started ✓');
+ loadBotStatus();
+ } catch(e) { toast('Failed to start bot', true); }
   }
 
   async function stopBot() {
  try {
  await fetch(API + '/api/bot/stop', { method: 'POST' });
- document.getElementById('botStatus').textContent = '● Bot Stopped';
- document.getElementById('botStatus').className = 'bot-status stopped';
- showToast('Bot stopped', '#ff6b35');
- } catch(e) { showToast('Connection error', '#ff4466'); }
+ toast('Bot stopped');
+ loadBotStatus();
+ } catch(e) { toast('Failed to stop bot', true); }
   }
 
   async function placeTrade(side) {
- const symbol = document.getElementById('tradeSymbol').value;
- const price = parseFloat(document.getElementById('tradePrice').value);
- const qty = parseInt(document.getElementById('tradeQty').value) || 1;
- if (!price) { showToast('Enter a price first', '#ff6b35'); return; }
+ const symbol = document.getElementById('symbol').value.trim().toUpperCase();
+ const quantity = parseFloat(document.getElementById('quantity').value);
+ const price = parseFloat(document.getElementById('price').value);
+ if (!symbol || !quantity || !price) { toast('Fill in symbol, quantity, and price', true); return; }
  try {
- const r = await fetch(API + '/api/trade/buy', {
+ const r = await fetch(API + '/api/trade/' + side, {
  method: 'POST',
  headers: { 'Content-Type': 'application/json' },
- body: JSON.stringify({ symbol, price, quantity: qty, side })
+ body: JSON.stringify({ symbol, quantity, price })
  });
  const d = await r.json();
- if (d.success) {
- showToast(`✅ ${side} ${symbol} @ ${price}`, '#00ff88');
- refresh();
- } else {
- showToast('⚠️ ' + (d.error || 'Trade failed'), '#ff4466');
- }
- } catch(e) { showToast('Connection error', '#ff4466'); }
+ if (!r.ok) { toast(d.error || 'Trade failed', true); return; }
+ toast(side.toUpperCase() + ' order placed ✓');
+ loadAccount(); loadPositions();
+ } catch(e) { toast('Trade error', true); }
   }
 
-  async function closePos(id, price) {
+  async function closeAll() {
+ if (!confirm('Close all open positions?')) return;
  try {
- const r = await fetch(API + '/api/trade/sell', {
- method: 'POST',
- headers: { 'Content-Type': 'application/json' },
- body: JSON.stringify({ positionId: id, exitPrice: price })
- });
+ const r = await fetch(API + '/api/trade/close-all', { method: 'POST' });
  const d = await r.json();
- if (d.success) {
- showToast('Position closed', '#00d4ff');
- refresh();
- } else {
- showToast('⚠️ ' + (d.error || 'Close failed'), '#ff4466');
- }
- } catch(e) {}
+ toast('All positions closed ✓');
+ loadAccount(); loadPositions(); loadHistory();
+ } catch(e) { toast('Failed to close positions', true); }
   }
 
-  // WebSocket
-  function connectWS() {
- const wsUrl = API.replace('https://', 'wss://').replace('http://', 'ws://');
- const ws = new WebSocket(wsUrl);
- const dot = document.getElementById('wsDot');
- const label = document.getElementById('wsStatus');
-
- ws.onopen = () => {
- dot.className = 'dot green';
- label.textContent = 'Live';
- };
- ws.onmessage = (e) => {
+  async function subscribe() {
  try {
- const msg = JSON.parse(e.data);
- if (['TRADE_EXECUTED','POSITION_CLOSED','ALL_POSITIONS_CLOSED','BOT_STARTED','BOT_STOPPED'].includes(msg.type)) {
- refresh();
- }
- } catch(err) {}
- };
- ws.onclose = () => {
- dot.className = 'dot';
- label.textContent = 'Reconnecting...';
- setTimeout(connectWS, 3000);
- };
- ws.onerror = () => ws.close();
+ const r = await fetch(API + '/api/subscribe', { method: 'POST' });
+ const d = await r.json();
+ if (d.url) { window.location.href = d.url; }
+ else { toast('Could not start checkout', true); }
+ } catch(e) { toast('Subscription error', true); }
   }
 
   function refresh() {
- loadAccount();
- loadPositions();
- loadHistory();
+ loadAccount(); loadPositions(); loadHistory(); loadBotStatus();
   }
 
-  // Init
   refresh();
-  connectWS();
-  setInterval(refresh, 10000);
+  setInterval(refresh, 10000);  // auto-refresh every 10 seconds
 </script>
+
 </body>
 </html>
