@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ApexTrade</title>
+  <style>
+ * { margin: 0; padding: 0; box-sizing: border-box; }
+ body {
+ background: #0a0e1a;
+ color: #e0e6f0;
+ font-family: 'Segoe UI', sans-serif;
+ min-height: 100vh;
+ }
+ header {
+ background: #0d1224;
+ border-bottom: 1px solid #1e2a45;
+ padding: 12px 24px;
+ display: flex;
+ align-items: center;
+ justify-content: space-between;
+ }
+ .logo {
+ font-size: 22px;
+ font-weight: 700;
+ color: #00d4ff;
+ letter-spacing: 1px;
+ }
+ .logo span { color: #ff6b35; }
+ .status-bar {
+ display: flex;
+ gap: 16px;
+ align-items: center;
+ font-size: 13px;
+ }
+ .dot {
+ width: 8px; height: 8px;
+ border-radius: 50%;
+ background: #ff4444;
+ display: inline-block;
+ margin-right: 6px;
+ }
+ .dot.green { background: #00ff88; }
+ .main {
+ padding: 20px 24px;
+ display: grid;
+ grid-template-columns: 1fr 1fr 1fr 1fr;
+ gap: 16px;
+ }
+ .card {
+ background: #0d1224;
+ border: 1px solid #1e2a45;
+ border-radius: 10px;
+ padding: 18px;
+ }
+ .card-label {
+ font-size: 11px;
+ color: #6b7fa3;
+ text-transform: uppercase;
+ letter-spacing: 1px;
+ margin-bottom: 8px;
+ }
+ .card-value {
+ font-size: 26px;
+ font-weight: 700;
+ color: #e0e6f0;
+ }
+ .card-value.green { color: #00ff88; }
+ .card-value.red { color: #ff4466; }
+ .card-sub {
+ font-size: 12px;
+ color: #6b7fa3;
+ margin-top: 4px;
+ }
+ .section {
+ grid-column: 1 / -1;
+ }
+ .two-col {
+ grid-column: 1 / -1;
+ display: grid;
+ grid-template-columns: 1fr 1fr;
+ gap: 16px;
+ }
+ .section-header {
+ font-size: 13px;
+ font-weight: 600;
+ color: #00d4ff;
+ text-transform: uppercase;
+ letter-spacing: 1px;
+ margin-bottom: 14px;
+ padding-bottom: 8px;
+ border-bottom: 1px solid #1e2a45;
+ }
+ table {
+ width: 100%;
+ border-collapse: collapse;
+ font-size: 13px;
+ }
+ th {
+ text-align: left;
+ padding: 8px 10px;
+ color: #6b7fa3;
+ font-weight: 500;
+ font-size: 11px;
+ text-transform: uppercase;
+ letter-spacing: 0.5px;
+ border-bottom: 1px solid #1e2a45;
+ }
+ td {
+ padding: 10px 10px;
+ border-bottom: 1px solid #131929;
+ color: #c8d4e8;
+ }
+ tr:last-child td { border-bottom: none; }
+ tr:hover td { background: #131929; }
+ .badge {
+ display: inline-block;
+ padding: 2px 8px;
+ border-radius: 4px;
+ font-size: 11px;
+ font-weight: 600;
+ }
+ .badge.buy { background: rgba(0,255,136,0.15); color: #00ff88; }
+ .badge.sell { background: rgba(255,68,102,0.15); color: #ff4466; }
+ .empty-state {
+ text-align: center;
+ padding: 30px;
+ color: #3a4a6b;
+ font-size: 13px;
+ }
+ .controls { grid-column: 1 / -1; }
+ .controls-grid {
+ display: grid;
+ grid-template-columns: 1fr 1fr;
+ gap: 20px;
+ }
+ .form-group {
+ margin-bottom: 14px;
+ }
+ .form-group label {
+ display: block;
+ font-size: 11px;
+ color: #6b7fa3;
+ text-transform: uppercase;
+ letter-spacing: 0.5px;
+ margin-bottom: 6px;
+ }
+ .form-group input, .form-group select {
+ width: 100%;
+ background: #131929;
+ border: 1px solid #1e2a45;
+ border-radius: 6px;
+ padding: 10px 12px;
+ color: #e0e6f0;
+ font-size: 14px;
+ outline: none;
+ }
+ .form-group input:focus, .form-group select:focus {
+ border-color: #00d4ff;
+ }
+ .btn {
+ padding: 10px 20px;
+ border-radius: 6px;
+ font-size: 13px;
+ font-weight: 600;
+ border: none;
+ cursor: pointer;
+ transition: opacity 0.15s;
+ letter-spacing: 0.5px;
+ }
+ .btn:hover { opacity: 0.85; }
+ .btn:active { opacity: 0.7; }
+ .btn-buy { background: #00c976; color: #000; }
+ .btn-sell { background: #ff4466; color: #fff; }
+ .btn-start { background: #00d4ff; color: #000; width: 100%; margin-bottom: 10px; }
+ .btn-stop { background: #ff6b35; color: #fff; width: 100%; }
+ .btn-close { background: transparent; border: 1px solid #ff4466; color: #ff4466; font-size: 11px; padding: 4px 10px; }
+ .bot-status {
+ text-align: center;
+ padding: 14px;
+ border-radius: 8px;
+ font-size: 13px;
+ font-weight: 600;
+ margin-bottom: 14px;
+ }
+ .bot-status.stopped { background: rgba(255,68,68,0.1); color: #ff4444; border: 1px solid rgba(255,68,68,0.2); }
+ .bot-status.running { background: rgba(0,255,136,0.1); color: #00ff88; border: 1px solid rgba(0,255,136,0.2); }
+ .toast {
+ position: fixed;
+ bottom: 24px; right: 24px;
+ background: #1e2a45;
+ border: 1px solid #00d4ff;
+ border-radius: 8px;
+ padding: 14px 20px;
+ font-size: 13px;
+ color: #e0e6f0;
+ display: none;
+ z-index: 999;
+ }
+ .toast.show { display: block; }
+ .pnl-pos { color: #00ff88; }
+ .pnl-neg { color: #ff4466; }
+ @media (max-width: 768px) {
+ .main { grid-template-columns: 1fr 1fr; }
+ .two-col, .controls-grid { grid-template-columns: 1fr; }
+ }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Apex<span>Trade</span></div>
+  <div class="status-bar">
+ <span><span class="dot" id="wsDot"></span><span id="wsStatus">Connecting...</span></span>
+ <span id="clockDisplay" style="color:#6b7fa3"></span>
+  </div>
+</header>
+
+<div class="main">
+
+  <!-- Stats Cards -->
+  <div class="card">
+ <div class="card-label">Account Balance</div>
+ <div class="card-value" id="balance">--</div>
+ <div class="card-sub">Paper Trading</div>
+  </div>
+  <div class="card">
+ <div class="card-label">Total P&L</div>
+ <div class="card-value" id="totalPnl">--</div>
+ <div class="card-sub" id="unrealizedPnl">Unrealized: --</div>
+  </div>
+  <div class="card">
+ <div class="card-label">Win Rate</div>
+ <div class="card-value" id="winRate">--</div>
+ <div class="card-sub" id="totalTrades">Total Trades: --</div>
+  </div>
+  <div class="card">
+ <div class="card-label">Open Positions</div>
+ <div class="card-value" id="positionCount">--</div>
+ <div class="card-sub">Active Now</div>
+  </div>
+
+  <!-- Open Positions -->
+  <div class="section card">
+ <div class="section-header">Open Positions</div>
+ <div id="positionsTable">
+ <div class="empty-state">No open positions</div>
+ </div>
+  </div>
+
+  <!-- Two column: Trade History + Bot Controls -->
+  <div class="two-col">
+
+ <!-- Trade History -->
+ <div class="card">
+ <div class="section-header">Trade History</div>
+ <div id="historyTable">
+ <div class="empty-state">No trades yet</div>
+ </div>
+ </div>
+
+ <!-- Right column: Bot + Manual Trade -->
+ <div style="display:flex; flex-direction:column; gap:16px;">
+
+ <!-- Bot Controls -->
+ <div class="card">
+ <div class="section-header">Bot Controls</div>
+ <div class="bot-status stopped" id="botStatus">● Bot Stopped</div>
+ <button class="btn btn-start" onclick="startBot()">▶ Start Automated Trading</button>
+ <button class="btn btn-stop" onclick="stopBot()">■ Stop Bot</button>
+ </div>
+
+ <!-- Manual Trade -->
+ <div class="card">
+ <div class="section-header">Manual Trade</div>
+ <div class="form-group">
+ <label>Symbol</label>
+ <select id="tradeSymbol">
+ <option>ES</option>
+ <option>NQ</option>
+ <option>CL</option>
+ <option>GC</option>
+ <option>RTY</option>
+ </select>
+ </div>
+ <div class="form-group">
+ <label>Price</label>
+ <input type="number" id="tradePrice" placeholder="e.g. 5200.25" step="0.25"/>
+ </div>
+ <div class="form-group">
+ <label>Quantity</label>
+ <input type="number" id="tradeQty" value="1" min="1"/>
+ </div>
+ <div style="display:flex; gap:10px;">
+ <button class="btn btn-buy" style="flex:1" onclick="placeTrade('BUY')">▲ BUY</button>
+ <button class="btn btn-sell" style="flex:1" onclick="placeTrade('SELL')">▼ SELL</button>
+ </div>
+ </div>
+
+ </div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  const API = 'https://apextrade-backend-production.up.railway.app';
+
+  function fmt(n) {
+ return '$' + parseFloat(n || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  function pnlClass(n) {
+ return parseFloat(n) >= 0 ? 'pnl-pos' : 'pnl-neg';
+  }
+
+  function showToast(msg, color) {
+ const t = document.getElementById('toast');
+ t.textContent = msg;
+ t.style.borderColor = color || '#00d4ff';
+ t.classList.add('show');
+ setTimeout(() => t.classList.remove('show'), 3500);
+  }
+
+  // Clock
+  setInterval(() => {
+ document.getElementById('clockDisplay').textContent = new Date().toLocaleTimeString('en-US', { hour12: false });
+  }, 1000);
+
+  // Load account data
+  async function loadAccount() {
+ try {
+ const r = await fetch(API + '/api/account');
+ const d = await r.json();
+ document.getElementById('balance').textContent = fmt(d.balance);
+
+ const pnlEl = document.getElementById('totalPnl');
+ pnlEl.textContent = fmt(d.totalPnL);
+ pnlEl.className = 'card-value ' + (d.totalPnL >= 0 ? 'green' : 'red');
+
+ document.getElementById('unrealizedPnl').textContent = 'Unrealized: ' + fmt(d.totalUnrealizedPnL);
+ document.getElementById('winRate').textContent = (d.winRate || 0).toFixed(1) + '%';
+ document.getElementById('totalTrades').textContent = 'Total Trades: ' + (d.totalTrades || 0);
+ } catch(e) {}
+  }
+
+  // Load positions
+  async function loadPositions() {
+ try {
+ const r = await fetch(API + '/api/positions');
+ const d = await r.json();
+ const pos = d.openPositions || [];
+ document.getElementById('positionCount').textContent = pos.length;
+
+ const el = document.getElementById('positionsTable');
+ if (!pos.length) {
+ el.innerHTML = '<div class="empty-state">No open positions</div>';
+ return;
+ }
+ el.innerHTML = `
+ <table>
+ <thead><tr>
+ <th>Symbol</th><th>Side</th><th>Qty</th>
+ <th>Entry</th><th>Current</th><th>P&L</th><th>Action</th>
+ </tr></thead>
+ <tbody>${pos.map(p => `
+ <tr>
+ <td><strong>${p.symbol || '--'}</strong></td>
+ <td><span class="badge ${p.side === 'LONG' ? 'buy' : 'sell'}">${p.side || '--'}</span></td>
+ <td>${p.quantity || 1}</td>
+ <td>${fmt(p.entryPrice)}</td>
+ <td>${fmt(p.currentPrice || p.entryPrice)}</td>
+ <td class="${pnlClass(p.unrealizedPnL)}">${fmt(p.unrealizedPnL)}</td>
+ <td><button class="btn btn-close" onclick="closePos('${p.id}', ${p.currentPrice || p.entryPrice})">Close</button></td>
+ </tr>`).join('')}
+ </tbody>
+ </table>`;
+ } catch(e) {}
+  }
+
+  // Load history
+  async function loadHistory() {
+ try {
+ const r = await fetch(API + '/api/history?limit=20');
+ const d = await r.json();
+ const trades = d.trades || [];
+
+ const el = document.getElementById('historyTable');
+ if (!trades.length) {
+ el.innerHTML = '<div class="empty-state">No trades yet</div>';
+ return;
+ }
+ el.innerHTML = `
+ <table>
+ <thead><tr>
+ <th>Symbol</th><th>Action</th><th>Price</th><th>P&L</th><th>Time</th>
+ </tr></thead>
+ <tbody>${trades.slice(0,15).map(t => `
+ <tr>
+ <td><strong>${t.symbol || '--'}</strong></td>
+ <td><span class="badge ${t.action === 'BUY' ? 'buy' : 'sell'}">${t.action || '--'}</span></td>
+ <td>${fmt(t.price)}</td>
+ <td class="${pnlClass(t.pnl)}">${t.pnl != null ? fmt(t.pnl) : '--'}</td>
+ <td style="color:#6b7fa3">${t.timestamp ? new Date(t.timestamp).toLocaleTimeString() : '--'}</td>
+ </tr>`).join('')}
+ </tbody>
+ </table>`;
+ } catch(e) {}
+  }
+
+  async function startBot() {
+ try {
+ const r = await fetch(API + '/api/bot/start', { method: 'POST' });
+ const d = await r.json();
+ if (d.success || d.error === 'Bot already running') {
+ document.getElementById('botStatus').textContent = '● Bot Running';
+ document.getElementById('botStatus').className = 'bot-status running';
+ showToast('✅ Bot started', '#00ff88');
+ } else {
+ showToast('⚠️ ' + (d.error || 'Could not start'), '#ff6b35');
+ }
+ } catch(e) { showToast('Connection error', '#ff4466'); }
+  }
+
+  async function stopBot() {
+ try {
+ await fetch(API + '/api/bot/stop', { method: 'POST' });
+ document.getElementById('botStatus').textContent = '● Bot Stopped';
+ document.getElementById('botStatus').className = 'bot-status stopped';
+ showToast('Bot stopped', '#ff6b35');
+ } catch(e) { showToast('Connection error', '#ff4466'); }
+  }
+
+  async function placeTrade(side) {
+ const symbol = document.getElementById('tradeSymbol').value;
+ const price = parseFloat(document.getElementById('tradePrice').value);
+ const qty = parseInt(document.getElementById('tradeQty').value) || 1;
+ if (!price) { showToast('Enter a price first', '#ff6b35'); return; }
+ try {
+ const r = await fetch(API + '/api/trade/buy', {
+ method: 'POST',
+ headers: { 'Content-Type': 'application/json' },
+ body: JSON.stringify({ symbol, price, quantity: qty, side })
+ });
+ const d = await r.json();
+ if (d.success) {
+ showToast(`✅ ${side} ${symbol} @ ${price}`, '#00ff88');
+ refresh();
+ } else {
+ showToast('⚠️ ' + (d.error || 'Trade failed'), '#ff4466');
+ }
+ } catch(e) { showToast('Connection error', '#ff4466'); }
+  }
+
+  async function closePos(id, price) {
+ try {
+ const r = await fetch(API + '/api/trade/sell', {
+ method: 'POST',
+ headers: { 'Content-Type': 'application/json' },
+ body: JSON.stringify({ positionId: id, exitPrice: price })
+ });
+ const d = await r.json();
+ if (d.success) {
+ showToast('Position closed', '#00d4ff');
+ refresh();
+ } else {
+ showToast('⚠️ ' + (d.error || 'Close failed'), '#ff4466');
+ }
+ } catch(e) {}
+  }
+
+  // WebSocket
+  function connectWS() {
+ const wsUrl = API.replace('https://', 'wss://').replace('http://', 'ws://');
+ const ws = new WebSocket(wsUrl);
+ const dot = document.getElementById('wsDot');
+ const label = document.getElementById('wsStatus');
+
+ ws.onopen = () => {
+ dot.className = 'dot green';
+ label.textContent = 'Live';
+ };
+ ws.onmessage = (e) => {
+ try {
+ const msg = JSON.parse(e.data);
+ if (['TRADE_EXECUTED','POSITION_CLOSED','ALL_POSITIONS_CLOSED','BOT_STARTED','BOT_STOPPED'].includes(msg.type)) {
+ refresh();
+ }
+ } catch(err) {}
+ };
+ ws.onclose = () => {
+ dot.className = 'dot';
+ label.textContent = 'Reconnecting...';
+ setTimeout(connectWS, 3000);
+ };
+ ws.onerror = () => ws.close();
+  }
+
+  function refresh() {
+ loadAccount();
+ loadPositions();
+ loadHistory();
+  }
+
+  // Init
+  refresh();
+  connectWS();
+  setInterval(refresh, 10000);
+</script>
+</body>
+</html>
